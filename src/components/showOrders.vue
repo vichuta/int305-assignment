@@ -42,7 +42,7 @@ const formatDate = (date) => {
           <tr v-for="(product, index) in order.products" :key="index">
             <td>{{product.name}}</td>
             <td style="text-align: center;">{{product.quantity}}</td>
-            <td style="text-align: right;">{{product.price}}</td>
+            <td style="text-align: right;">{{product.price*product.quantity}}</td>
           </tr>
           <tr>
             <th>Total bath</th>

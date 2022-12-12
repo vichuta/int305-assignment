@@ -237,32 +237,41 @@ async function getQuery() {
   else if(qryId==9){
     title.value = "Top 3 menu maximum total sales"
     menus.value = []
-    let sum = 0
-    qry = query(ordersRefs)
+    qry = query(ordersRefs, where('status', '==', true))
     const orderSnap = await getDocs(qry)
-    orderSnap.forEach((document)=>{
-      document.data().products.forEach( async(p1)=>{
-        sum = 0
-        document.data().products.forEach( async(p2)=>{
-          console.log(p1.name+p1.quantity+' == '+p2.name+p2.quantity)
-          if(p1.name == p2.name){
-            sum = sum + p2.quantity
-            console.log(sum)
-          }
+    qry = query(menusRefs)
+    const menuSnap = await getDocs(qry)
+    
+    menuSnap.forEach(async (m)=>{
+      let sum = 0
+      await setDoc(doc(db,"menus",m.id), {
+        total_sales : 0
+      },{merge: true})
+
+      orderSnap.forEach((document)=>{
+        document.data().products.forEach( async(p1)=>{
+            if(m.id == p1.name){
+              sum = sum + p1.quantity
+            }
+          })
         })
-        await setDoc(doc(db,"menus",p1.name), {
+
+        await setDoc(doc(db,"menus",m.id), {
           total_sales : sum
         },{merge: true})
+        
+        let data = m.data();
+        data.id = m.id;
+        menus.value.push(data)
       })
-    })
 
-    qry = query(membersRefs, orderBy('total_sales', 'desc'), limit(3))
-    const menuSnap = await getDocs(qry)
-    menuSnap.forEach((document)=>{
-      let data = document.data();
-      data.id = document.id;
-      menus.value.push(data)
-    })
+    // qry = query(menusRefs, orderBy('total_sales'), limit(3))
+    // const menuTopSnap = await getDocs(qry)
+    // menuTopSnap.forEach( (document)=>{
+    //   let data = document.data();
+    //   data.id = document.id;
+    //   menus.value.push(data)
+    // })
     console.log(menus.value)
   }
 
@@ -345,7 +354,7 @@ onMounted(() => {
   <ShowOrders v-else-if="route.params.id==2 || route.params.id == 5 || route.params.id == 7" :title="title" :orders="orders"/>
   <ShowMenus v-else-if="route.params.id==3 " :title="title" :menus="menus"/>
   <ShowAvgReview v-else-if="route.params.id==4" :title="title" :avg="avgReview"/>
-  <ShowMenuNoReview v-else-if="route.params.id == 6 || route.params.id == 8 " :title="title" :menus="menus"/>
+  <ShowMenuNoReview v-else-if="route.params.id == 6 || route.params.id == 8 || route.params.id == 9 " :title="title" :menus="menus"/>
 </template>
 
 <style></style>
