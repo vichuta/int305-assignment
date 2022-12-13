@@ -38,11 +38,11 @@ async function getQuery() {
       let data = document.data();
       data.id = document.id;
 
-      // const countOrders = await getCountFromServer(query(ordersRefs, where('status', '==', true)))
-      const countOrders = await getCountFromServer(query(ordersRefs))
-        await setDoc(doc(db,"members",document.id), {
-            total_order : countOrders.data().count
-        },{merge: true})
+      // -- นับ order ของ member (ตอนนี้ได้แค่นับ order ทั้งหมด)
+      // const countOrders = await getCountFromServer(query(ordersRefs))
+      //   await setDoc(doc(db,"members",document.id), {
+      //       total_order : countOrders.data().count
+      //   },{merge: true})
 
       members.value.push(data);
     })
@@ -90,12 +90,12 @@ async function getQuery() {
     title.value = "All Menus";
     menus.value = [];
     qry = query(menusRefs);
-    const querySnap = await getDocs(qry);
-    querySnap.forEach(async (document) => {
-      let data = document.data();
-      data.id = document.id;
-
-      const revivewRef = collection(db,"menus", document.id, "reviews");
+    const menuSnap = await getDocs(qry);
+    menuSnap.forEach(async (m) => {
+      let data = m.data();
+      data.id = m.id;
+//-- get sub collection
+      const revivewRef = collection(db,"menus", m.id, "reviews");
       qry = query(revivewRef);
       const querySnapSubCollection = await getDocs(qry);
       data.reviews = []
@@ -109,14 +109,34 @@ async function getQuery() {
       const countReview = await getCountFromServer(revivewRef)
         count = countReview.data().count
         if(count !== 0){
-          await setDoc(doc(db,"menus",document.id), {
+          await setDoc(doc(db,"menus",m.id), {
             avg_reviews : (sum/count).toFixed(1)
           },{merge: true})
           data.avg_reviews = (sum/count).toFixed(1)
         };
+      
+//-- set total_sales
+      qry = query(ordersRefs, where('status', '==', true))
+      const orderSnap = await getDocs(qry)
+      let sumQuantity = 0
+      await setDoc(doc(db,"menus",m.id), {
+        total_sales : 0
+      },{merge: true})
+      orderSnap.forEach((ord)=>{
+        ord.data().products.forEach( async(p1)=>{
+            if(m.id == p1.name){
+              sumQuantity = sumQuantity + p1.quantity
+            }
+          })
+        })
 
-      menus.value.push(data);
-    })
+        await setDoc(doc(db,"menus",m.id), {
+          total_sales : sumQuantity
+        },{merge: true})
+      
+        menus.value.push(data);
+      })
+    
     console.log(menus.value)
   }
   else if(qryId == 4){
@@ -237,44 +257,19 @@ async function getQuery() {
   else if(qryId==9){
     title.value = "Top 3 menu maximum total sales"
     menus.value = []
-    qry = query(ordersRefs, where('status', '==', true))
-    const orderSnap = await getDocs(qry)
-    qry = query(menusRefs)
-    const menuSnap = await getDocs(qry)
-    
-    menuSnap.forEach(async (m)=>{
-      let sum = 0
-      await setDoc(doc(db,"menus",m.id), {
-        total_sales : 0
-      },{merge: true})
 
-      orderSnap.forEach((document)=>{
-        document.data().products.forEach( async(p1)=>{
-            if(m.id == p1.name){
-              sum = sum + p1.quantity
-            }
-          })
-        })
-
-        await setDoc(doc(db,"menus",m.id), {
-          total_sales : sum
-        },{merge: true})
-        
-        let data = m.data();
-        data.id = m.id;
-        menus.value.push(data)
-      })
-
-    // qry = query(menusRefs, orderBy('total_sales'), limit(3))
-    // const menuTopSnap = await getDocs(qry)
-    // menuTopSnap.forEach( (document)=>{
-    //   let data = document.data();
-    //   data.id = document.id;
-    //   menus.value.push(data)
-    // })
+    qry = query(menusRefs, orderBy('total_sales','desc'), limit(3))
+    const menuTopSnap = await getDocs(qry)
+    menuTopSnap.forEach( (document)=>{
+      let data = document.data();
+      data.id = document.id;
+      menus.value.push(data)
+    })
     console.log(menus.value)
   }
+  else if(qryId==10){
 
+  }
   // else if (qryId == 2) {
   //   title.value = "Cities in New York";
   //   const zipsRef = collection(db, "zips");

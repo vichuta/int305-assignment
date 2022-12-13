@@ -28,7 +28,7 @@ const showStarEmpty = (avg) =>{
         <h3 style="text-align: center;">{{menu.id}}</h3>
         <div><b>price : </b>{{menu.price}}</div>
         <div><b>category : </b>{{menu.category}}</div>
-        
+        <div><b>total sales : </b>{{menu.total_sales}}</div>
       <hr/>
         <!-- Review -->
         <div v-if="menu.avg_reviews" class="box-reviews">

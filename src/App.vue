@@ -14,7 +14,7 @@ import { RouterLink, RouterView } from "vue-router";
     <RouterLink to="/query/7">7. ดู order ที่มียอด total_amount มากที่สุด</RouterLink>
     <RouterLink to="/query/8">8. ดู menu ที่อยู่ในหมวดหมู่กาแฟ และ ราคา น้อยกว่า 30</RouterLink>
     <RouterLink to="/query/9">9. ดู menu 3 แรกที่มียอดขายมากที่สุด</RouterLink>
-    <RouterLink to="/query/10">10. ดู member ที่มียอดการสั่งซื้อมากที่สุด</RouterLink>
+    <RouterLink to="/query/10">10. ดู member ที่มีจำนวนการสั่งซื้อมากที่สุด</RouterLink>
   </div>
   <div id="detail">
     <RouterView />

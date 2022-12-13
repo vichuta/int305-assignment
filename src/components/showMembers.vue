@@ -14,7 +14,7 @@ defineProps({
 <template>
     <h2>{{ title }}</h2>
     <div v-for="(member, index) in members" :key="member.id" class="box">
-        <div>{{member.firstname}} {{member.lastname}}</div>
+        <div> [ {{member.id}} ] &nbsp; {{member.firstname}} {{member.lastname}}</div>
         <div><b>contact : </b>{{member.tel}}</div>
     </div>
 </template>
