@@ -15,6 +15,7 @@ import { RouterLink, RouterView } from "vue-router";
     <RouterLink to="/query/8">8. View menu in the coffee category and price less than 30</RouterLink>
     <RouterLink to="/query/9">9. View top 5 menus that have most sales</RouterLink>
     <RouterLink to="/query/10">10. View top 3 members with the highest number of orders</RouterLink>
+    <RouterLink to="/query/11">11. Add/ Modified/ Delete Review</RouterLink>
   </div>
   <div id="detail">
     <RouterView />

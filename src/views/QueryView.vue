@@ -8,6 +8,7 @@ import ShowOrders from "../components/showOrders.vue";
 import ShowMenus from "../components/showMenus.vue"; 
 import ShowAvgReview from "../components/showAvgReview.vue"; 
 import ShowMenuNoReview from "../components/showMenuNoReview.vue"
+import CRUDMenuReview from "../components/crudMenuReview.vue";
 
 const route = useRoute();
 const title = ref("")
@@ -87,9 +88,9 @@ async function getQuery() {
     menuSnap.forEach(async (m) => {
       let data = m.data();
       data.id = m.id;
-//-- get sub collection
+// //-- get sub collection
       const revivewRef = collection(db,"menus", m.id, "reviews");
-      qry = query(revivewRef);
+      qry = query(revivewRef, limit(10));
       const querySnapSubCollection = await getDocs(qry);
       data.reviews = []
       let sum = 0
@@ -107,6 +108,44 @@ async function getQuery() {
           },{merge: true})
           data.avg_reviews = (sum/count).toFixed(1)
         };
+
+// แบบที่ 2 
+
+      // const revivewRef = collection(db,"menus", m.id, "reviews");
+      // qry = query(revivewRef, limit(10));
+      // onSnapshot((qry),async (snapshotComment) => {
+      // data.reviews = []
+      // let sum = 0
+      // let count = 0
+      // snapshotComment.docChange().forEach((change)=>{
+      //   const change_review = {
+      //     id:change.doc.id,
+      //     ... change.doc.data()
+      //   }
+      //   const reviewIndex = data.reviews.findIndex((review)=> {
+      //     review.id == change_review.id})
+      //   if(change.type == 'added'){
+      //     data.reviews.push(change_review)
+      //   }else if(change.type == 'modified'){
+      //     data.reviews[reviewIndex]=change_review
+      //   }else if(change.type == 'removed'){
+      //     data.splice=(reviewIndex,1)
+      //   }
+      // })
+      // snapshotComment.forEach((rev) => {
+      //   data.reviews.push(rev.data())
+      //   sum = sum + rev.data().stars
+      // })
+
+      // //-- หาค่าเฉลี่ยของ stars
+      // const countReview = await getCountFromServer(revivewRef)
+      //   count = countReview.data().count
+      //   if(count !== 0){
+      //     await setDoc(doc(db,"menus",m.id), {
+      //       avg_reviews : (sum/count).toFixed(1)
+      //     },{merge: true})
+      //     data.avg_reviews = (sum/count).toFixed(1)
+      //   };
       
 //-- set total_sales
       qry = query(ordersRefs, where('status', '==', true))
@@ -271,6 +310,62 @@ async function getQuery() {
       members.value.push(data)
     })
   }
+  else if(qryId==11){
+    title.value = "Add/ Modified/ Delete Review (Menu in milk category)"
+    menus.value = []
+    qry = query(menusRefs, where('category', "==", 'milk'));
+    const menuSnap = await getDocs(qry);
+    menuSnap.forEach(async (m) => {
+      let data = m.data();
+      data.id = m.id;
+// //-- get sub collection
+      const revivewRef = collection(db,"menus", m.id, "reviews");
+      qry = query(revivewRef, limit(10));
+      const querySnapSubCollection = await getDocs(qry);
+      data.reviews = []
+      let sum = 0
+      let count = 0
+      querySnapSubCollection.forEach((rev) => {
+        let data_review = rev.data()
+        data_review.id = rev.id
+        data.reviews.push(data_review)
+        sum = sum + rev.data().stars
+      })
+      //-- หาค่าเฉลี่ยของ stars
+      const countReview = await getCountFromServer(revivewRef)
+        count = countReview.data().count
+        if(count !== 0){
+          await setDoc(doc(db,"menus",m.id), {
+            avg_reviews : (sum/count).toFixed(1)
+          },{merge: true})
+          data.avg_reviews = (sum/count).toFixed(1)
+        };
+
+//-- set total_sales
+      qry = query(ordersRefs, where('status', '==', true))
+      const orderSnap = await getDocs(qry)
+      let sumQuantity = 0
+      await setDoc(doc(db,"menus",m.id), {
+        total_sales : 0
+      },{merge: true})
+      orderSnap.forEach((ord)=>{
+        ord.data().products.forEach( async(p1)=>{
+            if(m.id == p1.name){
+              sumQuantity = sumQuantity + p1.quantity
+            }
+          })
+        })
+
+        await setDoc(doc(db,"menus",m.id), {
+          total_sales : sumQuantity
+        },{merge: true})
+      
+        menus.value.push(data);
+      })
+    
+    console.log(menus.value)
+  }
+ 
 }
 
 watch(() => route.params.id, getQuery);
@@ -285,6 +380,7 @@ onMounted(() => {
   <ShowMenus v-else-if="route.params.id==3 " :title="title" :menus="menus"/>
   <ShowAvgReview v-else-if="route.params.id==4" :title="title" :avg="avgReview"/>
   <ShowMenuNoReview v-else-if="route.params.id == 6 || route.params.id == 8 || route.params.id == 9 " :title="title" :menus="menus"/>
+  <CRUDMenuReview v-else-if="route.params.id == 11" :title="title" :menus="menus" @reload-query="getQuery"/>
 </template>
 
 <style></style>

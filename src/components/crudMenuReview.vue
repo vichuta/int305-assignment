@@ -1,8 +1,17 @@
 <script setup>
+import { collection, doc, deleteDoc } from 'firebase/firestore'
+import db from '../firebase/init.js'
+
+import {ref} from 'vue'
+
 import IconStarFull from './icons/iconStarFull.vue'
 import IconStarEmpty from './icons/iconStarEmpty.vue'
 import IconStarHalf from './icons/iconStarHalf.vue';
 
+import NewReview from './newReview.vue';
+import EditReview from './editReview.vue'
+
+const emit = defineEmits(['reload-query'])
 const props = defineProps({
   title: {
     type: String,
@@ -31,6 +40,28 @@ const showStarEmpty = (avg) =>{
   }
 }
 
+async function ReloadReview(){
+  emit('reload-query')
+}
+
+async function removeReview(menuId,reviewId){
+    console.log(menuId + ' '+ reviewId)
+    const commentRef = doc(db,"menus",menuId,"reviews", reviewId)
+    await deleteDoc(commentRef);
+    ReloadReview()
+}
+// const statusEdit = ref(true)
+const showEditMode = (index)=> {
+  const indexEdit = document.getElementById(index);
+  console.log(indexEdit)
+  if(indexEdit.style.display == "none"){ 
+    // statusEdit.value = false
+    indexEdit.style.display = "block"
+  }else{
+    // statusEdit.value = true
+    indexEdit.style.display = "none"
+  }
+}
 
 </script>
 
@@ -51,17 +82,24 @@ const showStarEmpty = (avg) =>{
               <IconStarEmpty v-for="num in showStarEmpty(menu.avg_reviews)"/> 
           </div>
 
-          <div class="box-review" v-for="(review) in menu.reviews" :key="review.id">
+          <div class="box-review" v-for="(review,index) in menu.reviews" :key="review.id">
             <div style="color: green;">{{review.reviewer}}</div>
             <div>
               <IconStarFull v-for="num in parseInt(review.stars)"/> 
               <IconStarEmpty v-for="num in parseInt(5-review.stars)"/> 
               &emsp; <span style="color: gray; font-size: smaller;">{{formatDate(review.rev_date.toDate())}}</span></div>
             <div style=" font-size: small">{{review.comment}}</div>
+            <button @click="removeReview(menu.id, review.id)">Delete</button>
+            <button @click="showEditMode(review.id)">Edit</button>
+    
+            <div :id="review.id" style="display: none;">
+              <EditReview :menuId="menu.id" :review="review" @hide-edit="showEditMode" @reload-review="ReloadReview"/>
+            </div>
           </div>
         </div>
         <div v-else class="box-reviews">-- No reviews --</div>
-
+        <NewReview :menuId="menu.id" @reload-review="ReloadReview"/>
+        
     </div>
 </template>
 
