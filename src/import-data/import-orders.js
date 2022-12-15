@@ -1,13 +1,10 @@
 var admin = require("firebase-admin");
 const { getFirestore } = require('firebase-admin/firestore')
-
 var serviceAccount = require("./serviceAccountKey.json");
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "/***** replace with your databaseURL ************/"
 });
-
 var db = getFirestore() ;
 
 var orders = [{
@@ -120,7 +117,7 @@ var orders = [{
     ],
     "status": false
 }]
-
+// import data แบบปกติ
 orders.forEach((obj)=>{
     db.collection("orders").add({
         date: obj.date,

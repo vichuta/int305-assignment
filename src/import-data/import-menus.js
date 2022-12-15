@@ -163,7 +163,7 @@ reviews = [{
     "reviewer" : "m001",
     "stars" : 5
 }]
-
+//import data แบบ ตั้ง id เอง + subcollection
 menus.forEach((obj)=>{
     reviews.forEach((rev)=>{
         db.collection("menus").doc(obj.name).set({
@@ -178,7 +178,5 @@ menus.forEach((obj)=>{
                 stars : rev.stars
             }).then( docRef => { console.log("Document written with ID : "+docRef.id)})
         }
-        
     })
-    
 })

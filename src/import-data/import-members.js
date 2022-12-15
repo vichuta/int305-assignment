@@ -63,6 +63,7 @@ var members = [{
 }]
 
 members.forEach((obj)=>{
+    //import data แบบตั้ง id เอง
     db.collection("members").doc(obj.id).set({
         firstname: obj.firstname,
         lastname: obj.lastname,

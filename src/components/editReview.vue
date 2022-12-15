@@ -5,14 +5,8 @@ import db from '../firebase/init.js'
 
 const emit = defineEmits(['hide-edit','reload-review'])
 const props = defineProps({
-  menuId: {
-    type: String,
-    required: true,
-  },
-  review:{
-    type:Object,
-    required: true,
-  }
+  menuId: {type: String,required: true,},
+  review:{type:Object,required: true,}
 });
 console.log(props.review)
 const editingReview = ref({
@@ -39,7 +33,8 @@ async function updateReview(){
     <label for="reviewer">Name : </label>
     <input type="text" id="reviewer" v-model="editingReview.reviewer" required>
     <label for="stars"> Stars : </label>
-    <input type="number" id="stars" max="5" min="0"  v-model="editingReview.stars" required>
+    <input type="number" id="stars" max="5" min="0"  
+      v-model="editingReview.stars" required>
     <label for="comment"> Comment : </label>
     <input type="text" id="comment" v-model="editingReview.comment"> 
     <button @click="updateReview()">update</button>

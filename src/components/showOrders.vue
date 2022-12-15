@@ -45,7 +45,7 @@ const formatDate = (date) => {
             <td style="text-align: right;">{{product.price*product.quantity}}</td>
           </tr>
           <tr>
-            <th>Total bath</th>
+            <th>Total </th>
             <th style="text-align: center;">{{order.sumQuantity}}</th>
             <th style="text-align: right;">{{order.total_amount}}</th>
           </tr>

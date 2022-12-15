@@ -33,7 +33,8 @@ async function getQuery() {
       data.id = document.id;
 
       // -- นับ order ของ member (ตอนนี้ได้แค่นับ order ทั้งหมด)
-      const countOrders = await getCountFromServer(query(ordersRefs, where("member", "==", document.id)))
+      const countOrders
+       = await getCountFromServer(query(ordersRefs, where("member", "==", document.id)))
         await setDoc(doc(db,"members",document.id), {
             total_order : countOrders.data().count
         },{merge: true})
@@ -52,33 +53,28 @@ async function getQuery() {
       let total = 0
       let data = document.data();
       data.id = document.id;
-
       //--เพิ่มชื่อ member ใน list all orders
       data.memberName = ""
       if(document.data().member!= ''){
-        const docSnap = await getDoc(doc(db,"members",document.data().member)); //-- ส่ง id ไป search user มาทีละตัว
+          //-- ส่ง id ไป search member มาทีละตัว
+        const docSnap = await getDoc(doc(db,"members",document.data().member)); 
         if(docSnap.exists()){
           data.memberName = docSnap.data().firstname + ' ' + docSnap.data().lastname
         }
       }
-
       //--หาผลรวมของ ปริมาณสินค้าทั้งหมด และ ยอดรวม
       document.data().products.forEach((p)=>{
         sum = sum + p.quantity
         total = total + (p.quantity*p.price)
       })
       data.sumQuantity = sum
-
       //--เพิ่ม field total_amount ใน order (Computed Pattern)
       await setDoc(doc(db,"orders",document.id), {
           total_amount : total
       },{merge: true});  
-
       orders.value.push(data);
     })
-   
     console.log(orders.value)
-    
   }
   else if (qryId == 3) {
     title.value = "All Menus";
@@ -108,45 +104,6 @@ async function getQuery() {
           },{merge: true})
           data.avg_reviews = (sum/count).toFixed(1)
         };
-
-// แบบที่ 2 
-
-      // const revivewRef = collection(db,"menus", m.id, "reviews");
-      // qry = query(revivewRef, limit(10));
-      // onSnapshot((qry),async (snapshotComment) => {
-      // data.reviews = []
-      // let sum = 0
-      // let count = 0
-      // snapshotComment.docChange().forEach((change)=>{
-      //   const change_review = {
-      //     id:change.doc.id,
-      //     ... change.doc.data()
-      //   }
-      //   const reviewIndex = data.reviews.findIndex((review)=> {
-      //     review.id == change_review.id})
-      //   if(change.type == 'added'){
-      //     data.reviews.push(change_review)
-      //   }else if(change.type == 'modified'){
-      //     data.reviews[reviewIndex]=change_review
-      //   }else if(change.type == 'removed'){
-      //     data.splice=(reviewIndex,1)
-      //   }
-      // })
-      // snapshotComment.forEach((rev) => {
-      //   data.reviews.push(rev.data())
-      //   sum = sum + rev.data().stars
-      // })
-
-      // //-- หาค่าเฉลี่ยของ stars
-      // const countReview = await getCountFromServer(revivewRef)
-      //   count = countReview.data().count
-      //   if(count !== 0){
-      //     await setDoc(doc(db,"menus",m.id), {
-      //       avg_reviews : (sum/count).toFixed(1)
-      //     },{merge: true})
-      //     data.avg_reviews = (sum/count).toFixed(1)
-      //   };
-      
 //-- set total_sales
       qry = query(ordersRefs, where('status', '==', true))
       const orderSnap = await getDocs(qry)
@@ -158,17 +115,12 @@ async function getQuery() {
         ord.data().products.forEach( async(p1)=>{
             if(m.id == p1.name){
               sumQuantity = sumQuantity + p1.quantity
-            }
-          })
-        })
-
+            }})})
         await setDoc(doc(db,"menus",m.id), {
           total_sales : sumQuantity
         },{merge: true})
-      
         menus.value.push(data);
       })
-    
     console.log(menus.value)
   }
   else if(qryId == 4){
@@ -311,7 +263,7 @@ async function getQuery() {
     })
   }
   else if(qryId==11){
-    title.value = "Add/ Modified/ Delete Review (Menu in milk category)"
+    title.value = "Menu in milk category"
     menus.value = []
     qry = query(menusRefs, where('category', "==", 'milk'));
     const menuSnap = await getDocs(qry);
